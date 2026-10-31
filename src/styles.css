@@ -25,6 +25,7 @@
   --color-orange-hover:oklch(89% .085 60);
   --color-on-blue:oklch(98% .006 264);
   --color-on-orange:oklch(23% .035 45);
+  --color-photo-edge:oklch(70% .012 264);
   --font-body:Manrope,sans-serif;
   --ease-out:cubic-bezier(.22,1,.36,1);
   --duration-fast:160ms;
@@ -314,7 +315,7 @@ img{@apply block;max-width:100%}
   ::view-transition-old(site-navigation){display:none}
   .intro-copy>*{animation:focus-arrive 1100ms var(--ease-out) backwards}
   .intro-copy h1{animation-delay:40ms}.intro-copy .intro-role{animation-delay:130ms}.intro-copy .intro-description{animation-delay:210ms}.intro-copy .intro-contact{animation-delay:280ms}
-  .work-section{animation:focus-arrive 1100ms 300ms var(--ease-out) backwards}
+  .standalone-content:not(.photography-page),.photography-heading{animation:focus-arrive 600ms 60ms var(--ease-out) backwards}
   .case-intro{animation:focus-arrive 1400ms var(--ease-out) backwards}
   .project-facts{animation:content-arrive 680ms 180ms var(--ease-out) backwards}
   .case-figure{animation:content-arrive 740ms 260ms var(--ease-out) backwards}
@@ -444,7 +445,6 @@ img{@apply block;max-width:100%}
 
 @media(prefers-reduced-motion:no-preference){
   .photography-grid .photo-is-waiting{opacity:0}
-  .photography-heading{animation:focus-arrive 1100ms var(--ease-out) backwards}
 }
 @media print{.photography-grid .photo-is-waiting{opacity:1}}
 
@@ -452,8 +452,14 @@ img{@apply block;max-width:100%}
 .key-photography .key-body{background:linear-gradient(140deg,oklch(57% .09 260),oklch(32% .065 264))}
 .key-photography .key-face{background:linear-gradient(145deg,oklch(77% .085 260),oklch(67% .105 264));color:var(--color-bg);box-shadow:inset 0 1px 1px oklch(91% .035 260 / .8)}
 .key-photography .key-face>svg{color:var(--color-bg)}
-.photo-trigger{display:block;cursor:zoom-in}
-.photo-trigger:focus-visible{outline-offset:-5px;border-radius:4px}
+.photo-trigger{display:block;position:relative;cursor:pointer}
+.photo-trigger:focus-visible{outline:none}
+.photo-trigger:focus-visible::after{content:'';position:absolute;inset:4px;border:2px solid var(--color-bg);outline:2px solid var(--color-orange);border-radius:2px;pointer-events:none}
+.photo-number,.photo-expand{position:absolute;bottom:12px;background:var(--color-bg);color:var(--color-text);border-radius:4px;pointer-events:none}
+.photo-number{left:12px;padding:5px 9px;font-size:12px;font-weight:550;line-height:1.6;font-variant-numeric:tabular-nums}
+.photo-expand{right:12px;padding:6px;display:flex;align-items:center;justify-content:center}
+.photo-expand svg{width:18px;height:18px}
+.photo-trigger:is(:hover,:focus-visible) .photo-expand{color:var(--color-orange)}
 html.photo-viewer-open{overflow:hidden}
 .photo-viewer-open .page-shell{filter:blur(8px)}
 .photo-viewer{width:min(1200px,calc(100vw - 48px));height:calc(100svh - 48px);max-width:none;max-height:none;margin:auto;padding:0;border:0;background:transparent;color:var(--color-text);overflow:visible}
@@ -467,14 +473,21 @@ html.photo-viewer-open{overflow:hidden}
 .photo-viewer-navigation{display:flex;gap:10px;flex:none}
 .photo-prev-arrow{transform:rotate(180deg)}
 .photo-viewer-stage{min-height:0;display:flex;justify-content:center;align-items:center}
-.photo-viewer-image{display:block;width:100%;height:100%;object-fit:contain}
+.photo-viewer-image{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;border:1px solid var(--color-photo-edge);padding:5px;background:var(--color-surface)}
 .photo-viewer-status{margin:0;font-size:12px;color:var(--color-secondary);min-height:20px}
 @media(max-width:600px){.photo-viewer{width:calc(100vw - 24px);height:calc(100svh - 24px)}.photo-viewer-bottom{align-items:flex-start;gap:12px}.photo-viewer-control{padding:10px}.photo-viewer-navigation{gap:6px}}
 
-.photo-viewer-bottom{justify-content:flex-end}
+.photo-viewer-bottom{justify-content:space-between;flex-wrap:wrap;gap:12px}
+.photo-viewer-hint{margin:0;font-size:12px;color:var(--color-secondary)}
+@media(max-width:600px){.photo-viewer-hint{display:none}.photo-viewer-bottom{justify-content:flex-end}.photo-viewer-control{font-size:13px}.photo-number{left:10px;bottom:10px}.photo-expand{right:10px;bottom:10px}}
 
 @media(prefers-reduced-motion:no-preference){
   :is(.site-header nav a,.resume-link,.text-link,.email-link,.intro-role a,.intro-description a,.back-top){transition:color 100ms var(--ease-out),text-decoration-color 100ms var(--ease-out),border-color 100ms var(--ease-out)}
   :is(.site-header nav a,.resume-link,.text-link,.email-link,.intro-role a,.intro-description a,.back-top):hover{transition-delay:0s}
   :is(.site-header nav a,.resume-link,.text-link,.email-link,.intro-role a,.intro-description a,.back-top):focus-visible{transition-duration:0s;transition-delay:0s}
+}
+
+@media(hover:hover) and (pointer:fine){
+  .photo-trigger :is(.photo-number,.photo-expand){opacity:0;transition:opacity 100ms var(--ease-out)}
+  .photo-trigger:is(:hover,:focus-visible) :is(.photo-number,.photo-expand){opacity:1}
 }

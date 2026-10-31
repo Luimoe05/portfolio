@@ -180,7 +180,7 @@ if(!reducedMotion.matches && 'IntersectionObserver' in window) {
       observer.unobserve(entry.target);
     }
   },{threshold:.08});
-  document.querySelectorAll('.experience-section,.about-section,.contact-section,.case-narrative > section').forEach(section => observer.observe(section));
+  document.querySelectorAll('.case-narrative > section').forEach(section => observer.observe(section));
 }
 
 // Native modal semantics keep keyboard focus inside the enlarged-photo viewer.
@@ -203,7 +203,7 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     const token = ++request;
     expanded.src = thumbnail.currentSrc || thumbnail.src;
     expanded.alt = thumbnail.alt;
-    counter.textContent = `Photograph ${selected + 1} of ${photoTriggers.length}`;
+    counter.textContent = `Photo ${String(selected + 1).padStart(2,'0')} of ${photoTriggers.length}`;
     status.textContent = 'Loading larger image…';
     const full = new Image();
     full.onload = async () => {
@@ -217,7 +217,10 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     };
     full.src = trigger.href;
   };
-  photoTriggers.forEach((trigger,index) => trigger.addEventListener('click', event => {
+  photoTriggers.forEach((trigger,index) => {
+    trigger.setAttribute('aria-haspopup','dialog');
+    trigger.setAttribute('aria-controls','photo-viewer');
+    trigger.addEventListener('click', event => {
     if(event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     opener = trigger;
@@ -228,21 +231,30 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
       [{opacity:0,transform:'scale(.98)'},{opacity:1,transform:'scale(1)'}],
       {duration:220,easing:'cubic-bezier(.16,1,.3,1)'}
     );
-  }));
+    });
+  });
   photoViewer.querySelector('[data-photo-close]')!.addEventListener('click', () => photoViewer.close());
   photoViewer.querySelector('[data-photo-prev]')!.addEventListener('click', () => displayPhoto(selected - 1));
   photoViewer.querySelector('[data-photo-next]')!.addEventListener('click', () => displayPhoto(selected + 1));
   photoViewer.addEventListener('keydown', event => {
+    if(event.key === 'Tab') {
+      const controls = [...photoViewer.querySelectorAll<HTMLButtonElement>('button:not([disabled])')];
+      const first = controls[0];
+      const last = controls[controls.length - 1];
+      if(event.shiftKey && document.activeElement === first) {event.preventDefault(); last.focus();}
+      else if(!event.shiftKey && document.activeElement === last) {event.preventDefault(); first.focus();}
+      return;
+    }
+    if(event.altKey || event.ctrlKey || event.metaKey) return;
     if(event.key === 'ArrowLeft') {event.preventDefault(); displayPhoto(selected - 1);}
     if(event.key === 'ArrowRight') {event.preventDefault(); displayPhoto(selected + 1);}
   });
+  const isDismissArea = (target: EventTarget | null) => target instanceof Element && !target.closest('.photo-viewer-image,.photo-viewer-control');
   let backdropPressed = false;
-  photoViewer.addEventListener('pointerdown', event => {backdropPressed = event.target === photoViewer;});
+  photoViewer.addEventListener('pointerdown', event => {backdropPressed = isDismissArea(event.target);});
+  photoViewer.addEventListener('pointercancel', () => {backdropPressed = false;});
   photoViewer.addEventListener('click', event => {
-    if(backdropPressed && event.target === photoViewer) {
-      const bounds = photoViewer.getBoundingClientRect();
-      if(event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) photoViewer.close();
-    }
+    if(backdropPressed && isDismissArea(event.target)) photoViewer.close();
     backdropPressed = false;
   });
   photoViewer.addEventListener('close', () => {
@@ -285,6 +297,13 @@ if(galleryPhotos.length && !reducedMotion.matches && 'IntersectionObserver' in w
     const figure = img.closest<HTMLElement>('figure')!;
     states.set(figure,{ready:false,visible:false,revealed:false,index});
     figure.classList.add('photo-is-waiting');
+    // A keyboard user must never land on a transparent, animating photo.
+    figure.addEventListener('focusin', () => {
+      states.get(figure)!.revealed = true;
+      figure.classList.remove('photo-is-waiting');
+      figure.getAnimations().forEach(animation => animation.cancel());
+      observer.unobserve(figure);
+    });
     const loaded = async () => {
       try { await img.decode(); } catch { /* A decoded image can still display after a decode rejection. */ }
       states.get(figure)!.ready = true;
