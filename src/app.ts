@@ -94,7 +94,9 @@ if(keyboard) {
       if(!entries.some(entry => entry.isIntersecting)) return;
       assemble();
       entrance.disconnect();
-    }, {threshold:.25});
+    // On short mobile viewports, start as the first keys approach the screen
+    // instead of waiting for a quarter of the entire keyboard to be visible.
+    }, {threshold:0,rootMargin:'0px 0px 48px 0px'});
     entrance.observe(keyboard);
   } else {
     assemble();
