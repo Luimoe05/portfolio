@@ -1,7 +1,21 @@
+# Dependencies and generated output
 node_modules/
 dist/
+
+# Local system files and secrets
 .DS_Store
-.impeccable/config.local.json
-.impeccable/hook.cache.json
-.impeccable/review/
-.impeccable/questions/
+.env
+.env.*
+!.env.example
+*.log
+
+# Local authoring tools, references, and checks
+.agents/
+.codex/
+.impeccable/
+tests/
+ASSETS.md
+CONTENT.md
+DESIGN-BRIEF.md
+DESIGN.md
+PRODUCT.md

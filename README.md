@@ -25,7 +25,6 @@ npm run dev -- --port 5174
 
 ```sh
 npm run build     # Check TypeScript and generate the site in dist/
-npm test          # Run the test suite
 npm run preview   # Build and serve a production preview locally
 ```
 
