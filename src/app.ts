@@ -1,4 +1,26 @@
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const miamiTime = document.querySelector<HTMLTimeElement>('[data-miami-time]');
+if(miamiTime) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone:'America/New_York', hour:'numeric', minute:'2-digit', timeZoneName:'short'
+  });
+  let clockTimer: ReturnType<typeof setTimeout>;
+  const updateClock = () => {
+    clearTimeout(clockTimer);
+    const now = new Date();
+    const label = formatter.format(now);
+    miamiTime.textContent = label;
+    miamiTime.dateTime = now.toISOString();
+    miamiTime.setAttribute('aria-label',`Current time in Miami: ${label}`);
+    miamiTime.hidden = false;
+    clockTimer = setTimeout(updateClock,60000 - (Date.now() % 60000));
+  };
+  updateClock();
+  document.addEventListener('visibilitychange', () => {
+    if(!document.hidden) updateClock();
+  });
+}
+
 document.querySelectorAll<HTMLAnchorElement>('.hero-key').forEach(buildKey => {
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
   let frame = 0;

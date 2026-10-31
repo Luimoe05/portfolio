@@ -252,6 +252,9 @@ img{@apply block;max-width:100%}
 .social-links svg{width:16px;height:16px}
 .site-footer{@apply flex;@apply items-center;@apply justify-between;gap:20px;border-top:1px solid var(--color-line);padding:25px 0 30px;color:var(--color-muted);font-size:12px}
 .site-footer>a:first-child{color:var(--color-secondary)}
+.footer-location{display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
+.footer-location time{font-variant-numeric:tabular-nums;white-space:nowrap}
+.footer-location time::before{content:'·';margin-right:10px}
 .back-top{@apply flex;gap:12px;align-items:center}
 .back-top svg{transform:rotate(-90deg);width:15px;height:15px}
 .back-top:hover{color:var(--color-text)}
@@ -340,7 +343,7 @@ img{@apply block;max-width:100%}
   .section-heading{margin-bottom:22px}.experience-entry{gap:12px}.company-mark{width:30px;height:30px;font-size:12px}
   .experience-title{align-items:flex-start;@apply flex-col;gap:4px}.experience-title h3{font-size:16px}
   .education-row{@apply flex-col;gap:12px}.education-row>div:last-child{text-align:left}.community-list>div{display:block}.community-list span{@apply block;text-align:left;margin:7px 0}
-  .contact-section{gap:30px}.contact-actions{min-width:0}.email-copy{max-width:270px}.site-footer>span{display:none}
+  .contact-section{gap:30px}.contact-actions{min-width:0}.email-copy{max-width:270px}.site-footer{flex-wrap:wrap}.site-footer .footer-location{order:3;flex-basis:100%}
 }
 @media(max-width:760px){
   :root{--space-section:70px}
