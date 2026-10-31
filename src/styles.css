@@ -308,7 +308,10 @@ img{@apply block;max-width:100%}
   ::view-transition-group(repo-ai-visual),::view-transition-group(codifica-visual),::view-transition-group(creators-fiu-visual){animation-duration:380ms;animation-timing-function:var(--ease-out)}
   ::view-transition-old(root){animation:page-out 160ms var(--ease-out) both}
   ::view-transition-new(root){animation:page-in 340ms var(--ease-out) both}
-  .site-header{animation:header-arrive 1000ms var(--ease-out) backwards}
+  .site-header{view-transition-name:site-navigation}
+  .header-arrives .site-header{animation:header-arrive 1000ms var(--ease-out) backwards}
+  ::view-transition-group(site-navigation),::view-transition-new(site-navigation){animation:none}
+  ::view-transition-old(site-navigation){display:none}
   .intro-copy>*{animation:focus-arrive 1100ms var(--ease-out) backwards}
   .intro-copy h1{animation-delay:40ms}.intro-copy .intro-role{animation-delay:130ms}.intro-copy .intro-description{animation-delay:210ms}.intro-copy .intro-contact{animation-delay:280ms}
   .work-section{animation:focus-arrive 1100ms 300ms var(--ease-out) backwards}
@@ -469,3 +472,9 @@ html.photo-viewer-open{overflow:hidden}
 @media(max-width:600px){.photo-viewer{width:calc(100vw - 24px);height:calc(100svh - 24px)}.photo-viewer-bottom{align-items:flex-start;gap:12px}.photo-viewer-control{padding:10px}.photo-viewer-navigation{gap:6px}}
 
 .photo-viewer-bottom{justify-content:flex-end}
+
+@media(prefers-reduced-motion:no-preference){
+  :is(.site-header nav a,.resume-link,.text-link,.email-link,.intro-role a,.intro-description a,.back-top){transition:color 100ms var(--ease-out),text-decoration-color 100ms var(--ease-out),border-color 100ms var(--ease-out)}
+  :is(.site-header nav a,.resume-link,.text-link,.email-link,.intro-role a,.intro-description a,.back-top):hover{transition-delay:0s}
+  :is(.site-header nav a,.resume-link,.text-link,.email-link,.intro-role a,.intro-description a,.back-top):focus-visible{transition-duration:0s;transition-delay:0s}
+}
