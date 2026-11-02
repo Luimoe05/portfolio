@@ -6,10 +6,11 @@ export interface Photograph {
 }
 
 export const photographs: Photograph[] = [
-  {id:'dscf0547',width:1200,height:1800,alt:'The Golden Gate Bridge crossing blue-green water, with its shadow stretching toward the shoreline.'},
+  {id:'dscf0549',width:1200,height:1800,alt:'The Golden Gate Bridge’s red towers and suspension cables above turquoise water under a clear blue sky.'},
   {id:'dscf0737',width:1200,height:1800,alt:'A suspension bridge and glowing street lamps at dusk, framed through a dark window.'},
   {id:'dscf0855',width:1200,height:1800,alt:'Looking upward between tall buildings into a clear blue sky.'},
   {id:'dscf1696',width:1200,height:1800,alt:'A black-and-white street scene of seated musicians beside a brick wall, with a parked car behind them.'},
+  {id:'dscf4228',width:1200,height:1800,alt:'A tiled cathedral dome rising to a stone lantern and golden cross, with visitors on the balcony and misty hills beyond.'},
   {id:'dscf4423',width:1800,height:1200,alt:'Sunlight falling across the stone arches and curved interior of the Colosseum.'},
   {id:'dscf4465',width:1200,height:1800,alt:'Stone steps climbing a narrow street between warm orange buildings.'},
   {id:'dscf4534',width:1200,height:1800,alt:'Museum visitors walking beneath an ornate vaulted ceiling lit by tall windows.'},

@@ -80,7 +80,7 @@ function photoViewer() {
 }
 
 export function photographyPage() {
-  return shell({title:'Photography | Luis-Angel Moreno',description:'Architecture, street scenes, and everyday details photographed by Luis-Angel Moreno.',active:'about',image:'/photography/dscf0547-800.jpg',body:`<main id="main" class="standalone-content photography-page"><a class="text-link photography-back" href="/about/">Back to About${arrow}</a>${photographySection('h1')}${photoViewer()}</main>`});
+  return shell({title:'Photography | Luis-Angel Moreno',description:'Architecture, street scenes, and everyday details photographed by Luis-Angel Moreno.',active:'about',image:'/photography/dscf0549-800.jpg',body:`<main id="main" class="standalone-content photography-page"><a class="text-link photography-back" href="/about/">Back to About${arrow}</a>${photographySection('h1')}${photoViewer()}</main>`});
 }
 
 export function aboutPage() {
