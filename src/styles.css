@@ -57,6 +57,9 @@ img{@apply block;max-width:100%}
 .page-shell{max-width:1456px;margin:auto;padding:0 clamp(24px,4.4vw,72px)}
 .site-header{height:116px;@apply flex;@apply items-center;gap:60px}
 .wordmark{font-size:30px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.wordmark{display:inline-flex;align-items:baseline}
+.initials-mark{width:1.5em;height:1.2em;vertical-align:baseline;flex:none}
+.key-monogram{display:flex;align-items:baseline}
 .wordmark span{color:var(--color-orange)}
 .site-header nav{@apply flex;gap:32px;@apply ml-auto;align-items:center}
 .site-header nav a,.resume-link{color:var(--color-secondary);font-size:13px;@apply inline-flex;@apply items-center;gap:5px;padding:8px 0;@apply relative;transition:color var(--duration-fast) var(--ease-out)}
