@@ -249,6 +249,13 @@ img{@apply block;max-width:100%}
 .copy-button:active{background:var(--color-hover)}
 .text-link:active,.resume-link:active{color:var(--color-silver)}
 .copy-button svg{width:14px;height:14px}
+.copy-feedback{display:inline-grid;place-items:center;width:16px;height:16px;flex:none}
+.copy-feedback>svg{grid-area:1/1}
+.copy-check{opacity:0}
+.copy-check path{stroke-dasharray:1;stroke-dashoffset:0}
+.copy-button.is-copied{color:var(--color-blue-light)}
+.copy-button.is-copied .copy-feedback>svg:first-child{opacity:0}
+.copy-button.is-copied .copy-check{opacity:1}
 .copy-label{font-size:12px}
 .social-links{@apply flex;gap:28px;margin-top:26px;color:var(--color-secondary)}
 .social-links .text-link{font-size:12px}

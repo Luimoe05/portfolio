@@ -180,19 +180,33 @@ if(contactForm) {
 
 document.querySelectorAll<HTMLButtonElement>('[data-copy-email]').forEach(button => {
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let checkAnimation: Animation | undefined;
   button.addEventListener('click',async () => {
     const label = button.querySelector<HTMLElement>('.copy-label')!;
     const status = document.getElementById('copy-status')!;
     clearTimeout(timer);
+    checkAnimation?.cancel();
+    button.classList.remove('is-copied');
     try {
       await navigator.clipboard.writeText('luismore200528@gmail.com');
+      button.classList.add('is-copied');
+      const check = button.querySelector<SVGPathElement>('.copy-check path')!;
+      if(!reducedMotion.matches) checkAnimation = check.animate(
+        [{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
+        {duration:360,easing:'cubic-bezier(.22,1,.36,1)'}
+      );
       label.textContent = 'Copied';
       status.textContent = 'Email address copied to clipboard.';
     } catch {
       label.textContent = 'Select to copy';
       status.textContent = 'Copy unavailable. Select the email address beside this button.';
     }
-    timer = setTimeout(() => { label.textContent = 'Copy email'; status.textContent = ''; },3500);
+    timer = setTimeout(() => {
+      checkAnimation?.cancel();
+      button.classList.remove('is-copied');
+      label.textContent = 'Copy email';
+      status.textContent = '';
+    },3500);
   });
 });
 
