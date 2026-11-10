@@ -1,4 +1,106 @@
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+const navToggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
+const siteHeader = document.querySelector<HTMLElement>('.site-header');
+if(navToggle && siteHeader) {
+  const compactNavigation = window.matchMedia('(max-width: 720px)');
+  const setMenu = (open: boolean) => {
+    navToggle.setAttribute('aria-expanded',String(open));
+    siteHeader.classList.toggle('is-menu-open',open);
+  };
+  const syncNavigation = () => {
+    setMenu(false);
+    navToggle.hidden = !compactNavigation.matches;
+  };
+  siteHeader.classList.add('nav-enhanced');
+  syncNavigation();
+  compactNavigation.addEventListener('change',syncNavigation);
+  navToggle.addEventListener('click', () => {
+    const open = navToggle.getAttribute('aria-expanded') !== 'true';
+    setMenu(open);
+    if(open) siteHeader.querySelector<HTMLAnchorElement>('nav a')?.focus();
+  });
+  document.addEventListener('keydown', event => {
+    if(event.key !== 'Escape' || navToggle.getAttribute('aria-expanded') !== 'true') return;
+    setMenu(false);
+    navToggle.focus();
+  });
+  document.addEventListener('click', event => {
+    if(event.target instanceof Node && !siteHeader.contains(event.target)) setMenu(false);
+  });
+  siteHeader.addEventListener('focusout', event => {
+    if(event.relatedTarget instanceof Node && !siteHeader.contains(event.relatedTarget)) setMenu(false);
+  });
+}
+
+const themeSwitch = document.querySelector<HTMLButtonElement>('[data-theme-switch]');
+if(themeSwitch) {
+  const root = document.documentElement;
+  let themeTimer: ReturnType<typeof setTimeout> | undefined;
+  const setTheme = (theme: 'light' | 'dark', animate = false) => {
+    clearTimeout(themeTimer);
+    root.classList.toggle('theme-changing',animate && !reducedMotion.matches);
+    root.dataset.theme = theme;
+    themeSwitch.setAttribute('aria-checked',String(theme === 'dark'));
+    themeSwitch.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content',theme === 'light' ? '#fafafa' : '#171717');
+    if(animate) themeTimer = setTimeout(() => root.classList.remove('theme-changing'),400);
+  };
+  setTheme(root.dataset.theme === 'light' ? 'light' : 'dark');
+  themeSwitch.hidden = false;
+  const chooseTheme = (theme: 'light' | 'dark') => {
+    if(root.dataset.theme === theme) return;
+    setTheme(theme,true);
+    try { localStorage.setItem('portfolio-theme',theme); } catch { /* Still works for this page when storage is unavailable. */ }
+  };
+  themeSwitch.addEventListener('click', () => chooseTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+  themeSwitch.addEventListener('keydown', event => {
+    if(event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+    event.preventDefault();
+    chooseTheme(event.key === 'ArrowLeft' ? 'light' : 'dark');
+  });
+  window.addEventListener('storage', event => {
+    if(event.key === 'portfolio-theme' || event.key === null) setTheme(event.newValue === 'light' ? 'light' : 'dark',true);
+  });
+  reducedMotion.addEventListener('change', () => {
+    if(reducedMotion.matches) {
+      clearTimeout(themeTimer);
+      root.classList.remove('theme-changing');
+    }
+  });
+}
+
+// Sections stay readable throughout; each gets one small arrival as it enters.
+if(!reducedMotion.matches && 'IntersectionObserver' in window) {
+  const arrivals = new Map<Element, Animation>();
+  const observer = new IntersectionObserver(entries => {
+    for(const entry of entries) {
+      if(!entry.isIntersecting) continue;
+      observer.unobserve(entry.target);
+      if(entry.target.contains(document.activeElement)) continue;
+      const animation = entry.target.animate(
+        [{opacity:.86,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],
+        {duration:420,easing:'cubic-bezier(.22,1,.36,1)'}
+      );
+      arrivals.set(entry.target,animation);
+      animation.onfinish = animation.oncancel = () => arrivals.delete(entry.target);
+    }
+  },{threshold:.06});
+  document.querySelectorAll<HTMLElement>('.home-section, .experience-entry, .case-narrative > section, .photography-row').forEach(section => {
+    observer.observe(section);
+    section.addEventListener('focusin', () => {
+      observer.unobserve(section);
+      arrivals.get(section)?.cancel();
+    });
+  });
+  reducedMotion.addEventListener('change', () => {
+    if(!reducedMotion.matches) return;
+    observer.disconnect();
+    arrivals.forEach(animation => animation.cancel());
+    arrivals.clear();
+  });
+}
+
 const miamiTime = document.querySelector<HTMLTimeElement>('[data-miami-time]');
 if(miamiTime) {
   const formatter = new Intl.DateTimeFormat('en-US', {
@@ -18,128 +120,6 @@ if(miamiTime) {
   updateClock();
   document.addEventListener('visibilitychange', () => {
     if(!document.hidden) updateClock();
-  });
-}
-
-document.querySelectorAll<HTMLAnchorElement>('.hero-key').forEach(buildKey => {
-  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
-  let frame = 0;
-  let pointerX = 0;
-  let pointerY = 0;
-  const resetKey = () => {
-    cancelAnimationFrame(frame);
-    frame = 0;
-    buildKey.classList.remove('is-tracking');
-    buildKey.style.removeProperty('--key-rx');
-    buildKey.style.removeProperty('--key-ry');
-  };
-  buildKey.addEventListener('pointermove', event => {
-    if(reducedMotion.matches || !finePointer.matches) return;
-    const bounds = buildKey.getBoundingClientRect();
-    pointerX = Math.max(-1, Math.min(1, (event.clientX - bounds.left) / bounds.width * 2 - 1));
-    pointerY = Math.max(-1, Math.min(1, (event.clientY - bounds.top) / bounds.height * 2 - 1));
-    if(frame) return;
-    frame = requestAnimationFrame(() => {
-      buildKey.classList.add('is-tracking');
-      buildKey.style.setProperty('--key-rx', `${-pointerY * 8}deg`);
-      buildKey.style.setProperty('--key-ry', `${pointerX * 8}deg`);
-      frame = 0;
-    });
-  });
-  buildKey.addEventListener('pointerleave', resetKey);
-  buildKey.addEventListener('blur', resetKey);
-  reducedMotion.addEventListener('change', resetKey);
-  finePointer.addEventListener('change', resetKey);
-});
-// A finite assembly sequence. Every link remains usable while the keys settle.
-const keyboard = document.querySelector<HTMLElement>('.hero-keyboard');
-if(keyboard) {
-  const keys = [...keyboard.querySelectorAll<HTMLElement>('.hero-key')];
-  const poses = [
-    [-65, 55, -24, 25, -35],
-    [20, -85, 20, -40, 25],
-    [85, -45, 35, 30, -25],
-    [35, 85, -20, -30, 30],
-    [90, 65, 28, 35, 20],
-    [0, 90, 12, -25, 15],
-  ];
-  let animations: Animation[] = [];
-  const cancelAssembly = () => {
-    animations.forEach(animation => animation.cancel());
-    animations = [];
-  };
-  const assemble = () => {
-    cancelAssembly();
-    if(reducedMotion.matches) return;
-    const compact = window.matchMedia('(max-width: 760px)').matches;
-    animations = keys.map((key, i) => {
-      const [x,y,rz,rx,ry] = poses[i];
-      const distance = compact ? .55 : 1;
-      return key.animate([
-        {transform:`translate3d(${x*distance}px,${y*distance}px,120px) rotateX(${rx}deg) rotateY(${ry}deg) rotateZ(${rz}deg) scale(.82)`,opacity:0,filter:'blur(3px)'},
-        {transform:'translate3d(0,0,0) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1)',opacity:1,filter:'blur(0px)'},
-      ], {duration:1000,delay:160+i*100,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'});
-    });
-  };
-  // Focusing a navigation link should immediately reveal its settled position.
-  keyboard.addEventListener('focusin', cancelAssembly);
-  reducedMotion.addEventListener('change', () => {
-    cancelAssembly();
-  });
-  document.addEventListener('visibilitychange', () => {
-    if(document.hidden) cancelAssembly();
-  });
-  if('IntersectionObserver' in window) {
-    const entrance = new IntersectionObserver(entries => {
-      if(!entries.some(entry => entry.isIntersecting)) return;
-      assemble();
-      entrance.disconnect();
-    // On short mobile viewports, start as the first keys approach the screen
-    // instead of waiting for a quarter of the entire keyboard to be visible.
-    }, {threshold:0,rootMargin:'0px 0px 48px 0px'});
-    entrance.observe(keyboard);
-  } else {
-    assemble();
-  }
-}
-
-const tabList = document.querySelector('.project-tabs');
-if(tabList) {
-  const tabs = [...tabList.querySelectorAll<HTMLButtonElement>('[data-project]')];
-  const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls') ?? '')!);
-  tabList.setAttribute('role','tablist');
-  tabList.setAttribute('aria-orientation','horizontal');
-  tabs.forEach((tab,i) => {
-    tab.setAttribute('role','tab');
-    tab.setAttribute('aria-selected',String(i === 0));
-    tab.tabIndex = i === 0 ? 0 : -1;
-    panels[i].setAttribute('role','tabpanel');
-    panels[i].tabIndex = 0;
-  });
-  let active = 0;
-  const select = (index: number,focus = false) => {
-    if(focus) tabs[index].focus();
-    if(index === active) return;
-    panels[active].getAnimations().forEach(animation => animation.cancel());
-    tabs.forEach((tab,i) => {
-      tab.classList.toggle('is-active',i === index);
-      tab.setAttribute('aria-selected',String(i === index));
-      tab.tabIndex = i === index ? 0 : -1;
-      panels[i].hidden = i !== index;
-    });
-    active = index;
-    if(!reducedMotion.matches) panels[index].animate([{opacity:0,transform:'translateY(7px)'},{opacity:1,transform:'translateY(0)'}],{duration:260,easing:'cubic-bezier(.22,1,.36,1)'});
-  };
-  tabs.forEach((tab,i) => {
-    tab.addEventListener('click',() => select(i));
-    tab.addEventListener('keydown',event => {
-      let next;
-      if(event.key === 'ArrowRight') next = (i+1)%tabs.length;
-      if(event.key === 'ArrowLeft') next = (i-1+tabs.length)%tabs.length;
-      if(event.key === 'Home') next = 0;
-      if(event.key === 'End') next = tabs.length-1;
-      if(next !== undefined) { event.preventDefault(); select(next,true); }
-    });
   });
 }
 
@@ -193,7 +173,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy-email]').forEach(button
       const check = button.querySelector<SVGPathElement>('.copy-check path')!;
       if(!reducedMotion.matches) checkAnimation = check.animate(
         [{strokeDashoffset:'1'},{strokeDashoffset:'0'}],
-        {duration:360,easing:'cubic-bezier(.22,1,.36,1)'}
+        {duration:320,delay:60,fill:'backwards',easing:'cubic-bezier(.22,1,.36,1)'}
       );
       label.textContent = 'Copied';
       status.textContent = 'Email address copied to clipboard.';
@@ -208,18 +188,10 @@ document.querySelectorAll<HTMLButtonElement>('[data-copy-email]').forEach(button
       status.textContent = '';
     },3500);
   });
+  reducedMotion.addEventListener('change', () => {
+    if(reducedMotion.matches) checkAnimation?.cancel();
+  });
 });
-
-// Content is visible by default. Motion enhances an already usable document.
-if(!reducedMotion.matches && 'IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => {
-    for(const entry of entries) if(entry.isIntersecting) {
-      entry.target.animate([{opacity:.6,transform:'translateY(14px)'},{opacity:1,transform:'translateY(0)'}],{duration:620,easing:'cubic-bezier(.16,1,.3,1)'});
-      observer.unobserve(entry.target);
-    }
-  },{threshold:.08});
-  document.querySelectorAll('.case-narrative > section').forEach(section => observer.observe(section));
-}
 
 // Native modal semantics keep keyboard focus inside the enlarged-photo viewer.
 const photoViewer = document.querySelector<HTMLDialogElement>('[data-photo-viewer]');
@@ -266,7 +238,7 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     document.documentElement.classList.add('photo-viewer-open');
     displayPhoto(index);
     if(!reducedMotion.matches) openingAnimation = photoViewer.animate(
-      [{opacity:0,transform:'scale(.98)'},{opacity:1,transform:'scale(1)'}],
+      [{opacity:0},{opacity:1}],
       {duration:220,easing:'cubic-bezier(.16,1,.3,1)'}
     );
     });
@@ -303,71 +275,6 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
   });
   reducedMotion.addEventListener('change', () => {
     if(reducedMotion.matches) openingAnimation?.cancel();
-  });
-}
-
-// Reveal each photograph once it is decoded and enters the viewport.
-// Pending visibility is opt-in; the gallery remains visible without JavaScript.
-const galleryPhotos = [...document.querySelectorAll<HTMLImageElement>('.photography-grid img')];
-if(galleryPhotos.length && !reducedMotion.matches && 'IntersectionObserver' in window) {
-  const states = new Map<Element, {ready: boolean; visible: boolean; revealed: boolean; index: number}>();
-  const photoAnimations: Animation[] = [];
-  const reveal = (figure: HTMLElement) => {
-    const state = states.get(figure)!;
-    if(!state.ready || !state.visible || state.revealed) return;
-    state.revealed = true;
-    figure.classList.remove('photo-is-waiting');
-    observer.unobserve(figure);
-    if(reducedMotion.matches) return;
-    photoAnimations.push(figure.animate([
-      {opacity:0,transform:'translateY(18px)',filter:'blur(4px)'},
-      {opacity:1,transform:'translateY(0)',filter:'blur(0)'},
-    ],{duration:850,delay:(state.index % 3)*80,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'}));
-  };
-  const observer = new IntersectionObserver(entries => {
-    for(const entry of entries) {
-      const state = states.get(entry.target)!;
-      state.visible = entry.isIntersecting;
-      if(state.visible) reveal(entry.target as HTMLElement);
-    }
-  },{threshold:.08});
-  galleryPhotos.forEach((img,index) => {
-    const figure = img.closest<HTMLElement>('figure')!;
-    states.set(figure,{ready:false,visible:false,revealed:false,index});
-    figure.classList.add('photo-is-waiting');
-    // A keyboard user must never land on a transparent, animating photo.
-    figure.addEventListener('focusin', () => {
-      states.get(figure)!.revealed = true;
-      figure.classList.remove('photo-is-waiting');
-      figure.getAnimations().forEach(animation => animation.cancel());
-      observer.unobserve(figure);
-    });
-    const loaded = async () => {
-      try { await img.decode(); } catch { /* A decoded image can still display after a decode rejection. */ }
-      states.get(figure)!.ready = true;
-      reveal(figure);
-    };
-    const failed = () => {
-      figure.classList.remove('photo-is-waiting');
-      states.get(figure)!.revealed = true;
-      observer.unobserve(figure);
-    };
-    img.addEventListener('load',loaded,{once:true});
-    img.addEventListener('error',failed,{once:true});
-    observer.observe(figure);
-    if(img.complete) {
-      if(img.naturalWidth) void loaded();
-      else failed();
-    }
-  });
-  reducedMotion.addEventListener('change', () => {
-    if(!reducedMotion.matches) return;
-    observer.disconnect();
-    photoAnimations.forEach(animation => animation.cancel());
-    states.forEach((state,figure) => {
-      state.revealed = true;
-      figure.classList.remove('photo-is-waiting');
-    });
   });
 }
 

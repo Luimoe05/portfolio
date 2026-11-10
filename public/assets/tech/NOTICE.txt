@@ -1,0 +1,18 @@
+Technology logo sources
+
+React, TypeScript, FastAPI, Node.js, Express, PostgreSQL, Tailwind CSS,
+Firebase, MongoDB, Python, Docker, Kubernetes, CodeMirror:
+https://github.com/simple-icons/simple-icons/tree/develop/icons
+Simple Icons distributes these icons under CC0-1.0.
+
+OpenAI, Gemini, AWS:
+https://github.com/lobehub/lobe-icons/tree/master/packages/static-svg/icons
+License: MIT; see LICENSE-lobe-icons.txt.
+
+Pinecone: icon path extracted from the official homepage navigation logo,
+https://www.pinecone.io/ (original geometry; wordmark excluded).
+Judge0: https://judge0.com/assets/icons/icon.svg
+Tree-sitter: https://tree-sitter.github.io/tree-sitter/assets/images/tree-sitter-small.png
+
+Brand names and marks belong to their respective owners. Their use identifies
+technologies used in the portfolio and does not imply endorsement.
