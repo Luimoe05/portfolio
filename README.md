@@ -37,6 +37,6 @@ npm run preview   # Build and serve a production preview locally
 - `src/app.ts`: browser interactions.
 - `public/`: images, fonts, and résumé.
 
-The contact form uses FormSubmit. If you change its recipient, activate the new address through FormSubmit before expecting messages to arrive.
+The contact form uses FormSubmit’s recipient identifier in `src/templates.ts`; the AJAX endpoint is derived from the form action so both delivery methods use the same configuration. Click **Activate Form** in FormSubmit’s confirmation email before expecting delivery. If FormSubmit requests activation for the deployed site, confirm that site’s email too. Localhost activation alone does not demonstrate delivery from the production site. The form includes its current URL in AJAX submissions to identify where messages originated. If you change the recipient, activate the new address through FormSubmit.
 
 Deploy the generated `dist/` folder to a static host. A Vercel configuration is included.

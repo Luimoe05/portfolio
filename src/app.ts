@@ -149,11 +149,20 @@ if(contactForm) {
     status.textContent = '';
     status.removeAttribute('data-error');
     try {
-      const response = await fetch('https://formsubmit.co/ajax/luismore200528@gmail.com', {
+      // Derive AJAX delivery from the same recipient as the native form.
+      const endpoint = new URL(contactForm.action);
+      endpoint.pathname = `/ajax${endpoint.pathname}`;
+      data._url = window.location.href;
+      const response = await fetch(endpoint.href, {
         method:'POST', headers:{'Content-Type':'application/json',Accept:'application/json'},
         body:JSON.stringify(data), signal:AbortSignal.timeout(20000),
       });
-      const result: {success?: boolean | string} = await response.json();
+      const result: {success?: boolean | string; message?: string} = await response.json();
+      if(/activat|confirm.{0,30}email/i.test(result.message ?? '')) {
+        status.dataset.error = 'true';
+        status.textContent = 'The contact form is awaiting activation. Please email luismore200528@gmail.com directly. Your text is still here.';
+        return;
+      }
       if(!response.ok || (result.success !== true && result.success !== 'true')) throw new Error('Submission failed');
       status.textContent = 'Message submitted. Thanks for reaching out!';
       contactForm.reset();
