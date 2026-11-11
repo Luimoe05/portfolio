@@ -212,11 +212,35 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
   const expanded = photoViewer.querySelector<HTMLImageElement>('.photo-viewer-image')!;
   const counter = photoViewer.querySelector<HTMLElement>('.photo-viewer-counter')!;
   const status = photoViewer.querySelector<HTMLElement>('.photo-viewer-status')!;
+  const stage = photoViewer.querySelector<HTMLElement>('.photo-viewer-stage')!;
+  const zoom = photoViewer.querySelector<HTMLButtonElement>('[data-photo-zoom]')!;
+  const resetZoom = () => {
+    stage.classList.remove('is-zoomed');
+    stage.style.removeProperty('--photo-zoom-width');
+    stage.scrollTo(0, 0);
+    zoom.setAttribute('aria-pressed', 'false');
+    zoom.textContent = 'Zoom in';
+  };
+  const toggleZoom = (event?: MouseEvent) => {
+    if(stage.classList.contains('is-zoomed')) { resetZoom(); return; }
+    const bounds = expanded.getBoundingClientRect();
+    if(!bounds.width || !bounds.height) return;
+    const x = event ? (event.clientX - bounds.left) / bounds.width : .5;
+    const y = event ? (event.clientY - bounds.top) / bounds.height : .5;
+    stage.style.setProperty('--photo-zoom-width', `${bounds.width * 2}px`);
+    stage.classList.add('is-zoomed');
+    stage.scrollTo({left: x * bounds.width * 2 - stage.clientWidth / 2, top: y * bounds.height * 2 - stage.clientHeight / 2});
+    zoom.setAttribute('aria-pressed', 'true');
+    zoom.textContent = 'Zoom out';
+  };
+  expanded.addEventListener('click', toggleZoom);
+  zoom.addEventListener('click', () => toggleZoom());
   let selected = 0;
   let request = 0;
   let opener: HTMLAnchorElement | undefined;
   let openingAnimation: Animation | undefined;
   const displayPhoto = (index: number) => {
+    resetZoom();
     selected = (index + photoTriggers.length) % photoTriggers.length;
     const trigger = photoTriggers[selected];
     const thumbnail = trigger.querySelector<HTMLImageElement>('img')!;
@@ -258,7 +282,7 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
   photoViewer.querySelector('[data-photo-next]')!.addEventListener('click', () => displayPhoto(selected + 1));
   photoViewer.addEventListener('keydown', event => {
     if(event.key === 'Tab') {
-      const controls = [...photoViewer.querySelectorAll<HTMLButtonElement>('button:not([disabled])')];
+      const controls = [...photoViewer.querySelectorAll<HTMLElement>('button:not([disabled]), [tabindex="0"]')];
       const first = controls[0];
       const last = controls[controls.length - 1];
       if(event.shiftKey && document.activeElement === first) {event.preventDefault(); last.focus();}
@@ -269,7 +293,7 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     if(event.key === 'ArrowLeft') {event.preventDefault(); displayPhoto(selected - 1);}
     if(event.key === 'ArrowRight') {event.preventDefault(); displayPhoto(selected + 1);}
   });
-  const isDismissArea = (target: EventTarget | null) => target instanceof Element && !target.closest('.photo-viewer-image,.photo-viewer-control');
+  const isDismissArea = (target: EventTarget | null) => target instanceof Element && !target.closest('.photo-viewer-image,.photo-viewer-control,.photo-viewer-stage.is-zoomed');
   let backdropPressed = false;
   photoViewer.addEventListener('pointerdown', event => {backdropPressed = isDismissArea(event.target);});
   photoViewer.addEventListener('pointercancel', () => {backdropPressed = false;});
@@ -278,6 +302,7 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     backdropPressed = false;
   });
   photoViewer.addEventListener('close', () => {
+    resetZoom();
     request++;
     openingAnimation?.cancel();
     document.documentElement.classList.remove('photo-viewer-open');
