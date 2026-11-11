@@ -213,28 +213,51 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
   const counter = photoViewer.querySelector<HTMLElement>('.photo-viewer-counter')!;
   const status = photoViewer.querySelector<HTMLElement>('.photo-viewer-status')!;
   const stage = photoViewer.querySelector<HTMLElement>('.photo-viewer-stage')!;
-  const zoom = photoViewer.querySelector<HTMLButtonElement>('[data-photo-zoom]')!;
+  let zoomAnimation: Animation | undefined;
+  const setZoomLabel = (zoomed: boolean) => {
+    expanded.setAttribute('aria-pressed', String(zoomed));
+    expanded.setAttribute('aria-label', `${expanded.alt}. ${zoomed ? 'Zoom out' : 'Zoom in'}`);
+  };
+  const animateZoom = (before: DOMRect) => {
+    if(reducedMotion.matches) return;
+    const after = expanded.getBoundingClientRect();
+    if(!after.width || !after.height) return;
+    zoomAnimation = expanded.animate([
+      {transformOrigin:'0 0', transform:`translate(${before.left - after.left}px, ${before.top - after.top}px) scale(${before.width / after.width}, ${before.height / after.height})`},
+      {transformOrigin:'0 0', transform:'none'},
+    ], {duration:340, easing:'cubic-bezier(.22,1,.36,1)'});
+  };
   const resetZoom = () => {
+    zoomAnimation?.cancel();
     stage.classList.remove('is-zoomed');
     stage.style.removeProperty('--photo-zoom-width');
     stage.scrollTo(0, 0);
-    zoom.setAttribute('aria-pressed', 'false');
-    zoom.textContent = 'Zoom in';
+    setZoomLabel(false);
   };
   const toggleZoom = (event?: MouseEvent) => {
-    if(stage.classList.contains('is-zoomed')) { resetZoom(); return; }
+    if(zoomAnimation?.playState === 'running') return;
     const bounds = expanded.getBoundingClientRect();
     if(!bounds.width || !bounds.height) return;
+    if(stage.classList.contains('is-zoomed')) {
+      resetZoom();
+      animateZoom(bounds);
+      return;
+    }
     const x = event ? (event.clientX - bounds.left) / bounds.width : .5;
     const y = event ? (event.clientY - bounds.top) / bounds.height : .5;
     stage.style.setProperty('--photo-zoom-width', `${bounds.width * 2}px`);
     stage.classList.add('is-zoomed');
     stage.scrollTo({left: x * bounds.width * 2 - stage.clientWidth / 2, top: y * bounds.height * 2 - stage.clientHeight / 2});
-    zoom.setAttribute('aria-pressed', 'true');
-    zoom.textContent = 'Zoom out';
+    setZoomLabel(true);
+    animateZoom(bounds);
   };
   expanded.addEventListener('click', toggleZoom);
-  zoom.addEventListener('click', () => toggleZoom());
+  expanded.addEventListener('keydown', event => {
+    if(event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      toggleZoom();
+    }
+  });
   let selected = 0;
   let request = 0;
   let opener: HTMLAnchorElement | undefined;
@@ -247,6 +270,7 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     const token = ++request;
     expanded.src = thumbnail.currentSrc || thumbnail.src;
     expanded.alt = thumbnail.alt;
+    setZoomLabel(false);
     counter.textContent = `Photo ${String(selected + 1).padStart(2,'0')} of ${photoTriggers.length}`;
     status.textContent = 'Loading larger image…';
     const full = new Image();
@@ -309,7 +333,10 @@ if(photoViewer && typeof photoViewer.showModal === 'function' && photoTriggers.l
     opener?.focus({preventScroll:true});
   });
   reducedMotion.addEventListener('change', () => {
-    if(reducedMotion.matches) openingAnimation?.cancel();
+    if(reducedMotion.matches) {
+      openingAnimation?.cancel();
+      zoomAnimation?.cancel();
+    }
   });
 }
 
