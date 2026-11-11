@@ -1,5 +1,15 @@
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+const headCanvas = document.querySelector<HTMLCanvasElement>('[data-head-study]');
+const headControl = document.querySelector<HTMLButtonElement>('[data-head-control]');
+if(headCanvas && headControl) {
+  import('./head-study.ts').then(({mountHeadStudy}) => mountHeadStudy(headCanvas,headControl)).catch(() => {
+    const study = headCanvas.closest<HTMLElement>('.head-study');
+    if(study) study.hidden = true;
+    document.querySelector('.introduction')?.classList.add('head-unavailable');
+  });
+}
+
 const navToggle = document.querySelector<HTMLButtonElement>('[data-nav-toggle]');
 const siteHeader = document.querySelector<HTMLElement>('.site-header');
 if(navToggle && siteHeader) {
@@ -43,7 +53,7 @@ if(themeSwitch) {
     root.dataset.theme = theme;
     themeSwitch.setAttribute('aria-checked',String(theme === 'dark'));
     themeSwitch.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
-    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content',theme === 'light' ? '#fafafa' : '#171717');
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content',theme === 'light' ? '#f6f3ed' : '#1b1a18');
     if(animate) themeTimer = setTimeout(() => root.classList.remove('theme-changing'),400);
   };
   setTheme(root.dataset.theme === 'light' ? 'light' : 'dark');

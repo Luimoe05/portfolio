@@ -34,7 +34,7 @@ export async function build(): Promise<void> {
   await cp('public', 'dist', { recursive: true });
   await Promise.all([
     writeFile('dist/styles.css', css),
-    bundle({ entryPoints: ['src/app.ts'], outfile: 'dist/app.js', bundle: true, minify: true, format: 'esm', target: 'es2022' }),
+    bundle({ entryPoints: ['src/app.ts'], outdir: 'dist', splitting: true, bundle: true, minify: true, format: 'esm', target: 'es2022' }),
     ...[...pages].map(async ([path, html]) => {
       await mkdir(resolve('dist', path, '..'), { recursive: true });
       await writeFile(`dist/${path}`, html);
