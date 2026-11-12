@@ -57,7 +57,7 @@ function techStack(names: string[], className = '') {
 }
 
 function projectIndex() {
-  return `<ul class="project-index">${projects.map(p => `<li><h3><a href="/projects/${p.slug}/">${escape(p.name)}${external}</a></h3><p>${escape(p.summary)}</p>${techStack(p.stack.slice(0,4),'project-stack')}</li>`).join('')}</ul>`;
+  return `<ul class="project-index">${projects.map(p => `<li><a class="project-card" href="/projects/${p.slug}/" aria-labelledby="project-name-${p.slug}"><h3 id="project-name-${p.slug}">${escape(p.name)}${external}</h3><p>${escape(p.summary)}</p>${techStack(p.stack.slice(0,4),'project-stack')}</a></li>`).join('')}</ul>`;
 }
 
 export function homepage() {

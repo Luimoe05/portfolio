@@ -88,7 +88,7 @@ main { min-width: 0; }
 .home-links a { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; }
 .home-links svg { width: 13px; height: 13px; }
 .project-index { list-style: none; padding: 0; margin: 0; }
-.project-index > li { padding: 16px 0; margin: 0; border-bottom: 1px solid var(--color-line); }
+.project-index > li { padding: 0; margin: 0; border-bottom: 1px solid var(--color-line); }
 .project-index > li:last-child { border-bottom: 0; }
 .project-index > li { position: relative; isolation: isolate; }
 .project-index > li::before { content: ''; position: absolute; inset: 0 -12px; z-index: -1; border-radius: 4px; background: var(--color-surface); opacity: 0; transition: opacity 180ms ease-out; pointer-events: none; }
@@ -99,8 +99,10 @@ main { min-width: 0; }
 @media (prefers-reduced-motion: reduce) {
   .project-index > li::before { transition: none; }
 }
-.project-index h3 { font-size: 16px; }
-.project-index h3 a { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 28px; text-decoration: none; }
+.project-card { display: block; margin: 0 -12px; padding: 16px 12px; border-radius: 4px; text-decoration: none; }
+.project-card:focus-visible { outline-offset: 2px; }
+.project-index > li:focus-within::before { opacity: 1; }
+.project-index h3 { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 28px; font-size: 16px; }
 .project-index h3 svg { width: 16px; height: 16px; color: var(--color-muted); }
 .project-index p { margin: 6px 32px 8px 0; color: var(--color-muted); font-size: 14px; line-height: 1.75; }
 .project-stack { font-size: 12px; color: var(--color-muted); }
