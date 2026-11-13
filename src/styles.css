@@ -84,6 +84,19 @@ main { min-width: 0; }
 .introduction > p { color: var(--color-muted); max-width: 62ch; }
 .introduction .intro-role { color: var(--color-text); }
 .intro-role { margin-bottom: 16px; font-size: 17px; }
+/* Let the affiliation links soften to gray on hover. */
+.introduction > p > a {
+  --affiliation-hover: #c4c4c4;
+  transition: color 240ms ease-out, text-decoration-color 240ms ease-out;
+}
+:root[data-theme="light"] .introduction > p > a { --affiliation-hover: #646464; }
+.introduction > p > a:is(:hover, :focus-visible) {
+  color: var(--affiliation-hover);
+  text-decoration-color: currentColor;
+}
+@media (prefers-reduced-motion: reduce) {
+  .introduction > p > a { transition: none; }
+}
 .home-links { display: flex; flex-wrap: wrap; gap: 8px 22px; margin-top: 22px; font-size: 13px; }
 .home-links a { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; }
 .home-links svg { width: 13px; height: 13px; }
